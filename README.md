@@ -64,9 +64,9 @@ Antes de começar, certifique-se de ter instalado em sua máquina:
 
 ---
 
-## 👥 Integrantes
+## 👥 Integrantes (3º ano B)
 
-* **[Heloísa Gabrielly Paixão]** - [GitHub](https://github.com/heloisagpaixao)
-* **[Mônica Cotrim Manfrinato]** - [GitHub](https://github.com/monica-manfrinato)
+* **Heloísa Gabrielly Paixão** Nº09 - [GitHub](https://github.com/heloisagpaixao)
+* **Mônica Cotrim Manfrinato** Nº21 - [GitHub](https://github.com/monica-manfrinato)
 
 ---
