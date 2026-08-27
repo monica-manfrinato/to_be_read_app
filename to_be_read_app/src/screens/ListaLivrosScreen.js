@@ -6,10 +6,10 @@ import LivroItem from "../components/LivroItem"
 export default function ListaLivrosScreen (
 ){
 
-  const [tarefas, setTarefas] = useState([]);
+  const [leitura, setLeitura] = useState([]);
   const [textoInput, setTextoInput] = useState("");
   const [carregando, setCarregando] = useState(true);
-  const [editarTarefa, setEditarTarefa] = useState(null);
+  const [editarLeitura, setEditarLeitura] = useState(null);
 
 
   function adicionarLeitura(){
