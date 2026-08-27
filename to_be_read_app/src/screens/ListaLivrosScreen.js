@@ -1,45 +1,231 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
-import LivroItem from "../components/LivroItem"
+import {
+  FlatList,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import LivroItem from "../components/LivroItem";
 
+const CHAVE_STORAGE = "@to-be-read:livros";
 
-export default function ListaLivrosScreen (
-){
-
-  const [leitura, setLeitura] = useState([]);
-  const [textoInput, setTextoInput] = useState("");
+export default function ListaLivrosScreen() {
+  const [livros, setLivros] = useState([]);
+  const [tituloInput, setTituloInput] = useState("");
   const [carregando, setCarregando] = useState(true);
-  const [editarLeitura, setEditarLeitura] = useState(null);
+  const [editarLivro, setEditarLivro] = useState(null);
 
+  // Carregar do AsyncStorage ao iniciar
+  useEffect(() => {
+    async function carregarLivros() {
+      try {
+        const livrosSalvos = await AsyncStorage.getItem(CHAVE_STORAGE);
+        if (livrosSalvos !== null) {
+          setLivros(JSON.parse(livrosSalvos));
+        }
+      } catch (erro) {
+        console.error("Erro ao carregar livros:", erro);
+      } finally {
+        setCarregando(false);
+      }
+    }
+    carregarLivros();
+  }, []);
 
-  function adicionarLeitura(){
-    const texto = textoInput.trim();
-     if (texto === "") return;
+  // Salvar no AsyncStorage quando a lista de livros for alterada
+  useEffect(() => {
+    if (carregando) return;
+    AsyncStorage.setItem(CHAVE_STORAGE, JSON.stringify(livros)).catch(
+      (erro) => console.error("Erro ao salvar livros:", erro)
+    );
+  }, [livros, carregando]);
 
-    const novaTarefa = {
+  function adicionarLivro() {
+    const titulo = tituloInput.trim();
+    if (titulo === "") return;
+
+    const novoLivro = {
       id: Date.now().toString(),
-      texto,
-      concluida: false,
+      titulo,
+      lido: false,
+      avaliacao: "",
+      dataInicio: "",
+      dataFim: "",
     };
 
-    setTarefas((tarefasAtuais) => [...tarefasAtuais, novaTarefa]);
-    setTextoInput("")
-
+    setLivros((livrosAtuais) => [...livrosAtuais, novoLivro]);
+    setTituloInput("");
   }
-  return(
-<View>
-    <Text style={styles.titulo}> Virando a página</Text>
-    <View>
 
-      <TextInput style={styles.input} placeholder="Qual sua próxima leitura?"/>
-      <TouchableOpacity
+  function alternarLido(id) {
+    setLivros((livrosAtuais) =>
+      livrosAtuais.map((livro) =>
+        livro.id === id ? { ...livro, lido: !livro.lido } : livro
+      )
+    );
+  }
+
+  function excluirLivro(id) {
+    setLivros((livrosAtuais) =>
+      livrosAtuais.filter((livro) => livro.id !== id)
+    );
+  }
+
+  function limparLivros() {
+    setLivros([]);
+  }
+
+  function salvarEdicao() {
+    if (!editarLivro || editarLivro.titulo.trim() === "") return;
+
+    setLivros((livrosAtuais) =>
+      livrosAtuais.map((item) =>
+        item.id === editarLivro.id
+          ? {
+              ...item,
+              titulo: editarLivro.titulo.trim(),
+              avaliacao: editarLivro.avaliacao,
+              dataInicio: editarLivro.dataInicio,
+              dataFim: editarLivro.dataFim,
+            }
+          : item
+      )
+    );
+
+    setEditarLivro(null);
+  }
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <Text style={styles.titulo}>Virando a página 📖</Text>
+
+      {/* Formulário de Adição */}
+      <View style={styles.formulario}>
+        <TextInput
+          style={styles.input}
+          placeholder="Qual sua próxima leitura?"
+          value={tituloInput}
+          onChangeText={setTituloInput}
+          onSubmitEditing={adicionarLivro}
+          returnKeyType="done"
+        />
+        <TouchableOpacity
           style={styles.botaoAdicionar}
-          onPress={adicionarLeitura}>
-        <Text style={styles.textoBotaoAdicionar}>Adicionar leitura 🌟</Text>
+          onPress={adicionarLivro}
+        >
+          <Text style={styles.textoBotaoAdicionar}>Adicionar 🌟</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={styles.botaoLimpar} onPress={limparLivros}>
+        <Text style={styles.textoBotaoLimpar}>Limpar estante</Text>
       </TouchableOpacity>
-    </View>
-  </View>
-  )
+
+      {/* Lista de Livros */}
+      <FlatList
+        data={livros}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <LivroItem
+            livro={item}
+            aoAlternarConcluida={alternarLido}
+            aoExcluir={excluirLivro}
+            aoEditar={() => setEditarLivro(item)}
+          />
+        )}
+        ListEmptyComponent={
+          <Text style={styles.listaVazia}>
+            Nenhum livro na sua estante ainda. Add o primeiro!
+          </Text>
+        }
+        contentContainerStyle={styles.listaConteudo}
+      />
+
+      {/* Modal de Edição */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={!!editarLivro}
+        onRequestClose={() => setEditarLivro(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitulo}>Detalhes do Livro</Text>
+
+            <Text style={styles.labelInput}>Título do Livro:</Text>
+            <TextInput
+              style={styles.inputModal}
+              value={editarLivro?.titulo || ""}
+              onChangeText={(texto) =>
+                setEditarLivro((atual) => ({ ...atual, titulo: texto }))
+              }
+            />
+
+            <Text style={styles.labelInput}>Avaliação (Nota de 1 a 5):</Text>
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Ex: 5 ou ⭐⭐⭐⭐⭐"
+              value={editarLivro?.avaliacao || ""}
+              onChangeText={(texto) =>
+                setEditarLivro((atual) => ({ ...atual, avaliacao: texto }))
+              }
+            />
+
+            <View style={styles.rowInputs}>
+              <View style={styles.colunaData}>
+                <Text style={styles.labelInput}>Início:</Text>
+                <TextInput
+                  style={styles.inputModal}
+                  placeholder="DD/MM/AAAA"
+                  value={editarLivro?.dataInicio || ""}
+                  onChangeText={(texto) =>
+                    setEditarLivro((atual) => ({ ...atual, dataInicio: texto }))
+                  }
+                />
+              </View>
+
+              <View style={styles.colunaDataDireita}>
+                <Text style={styles.labelInput}>Término:</Text>
+                <TextInput
+                  style={styles.inputModal}
+                  placeholder="DD/MM/AAAA"
+                  value={editarLivro?.dataFim || ""}
+                  onChangeText={(texto) =>
+                    setEditarLivro((atual) => ({ ...atual, dataFim: texto }))
+                  }
+                />
+              </View>
+            </View>
+
+            <View style={styles.modalBotoes}>
+              <TouchableOpacity
+                style={[styles.botaoModal, styles.botaoCancelar]}
+                onPress={() => setEditarLivro(null)}
+              >
+                <Text style={styles.textoBotaoModal}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.botaoModal, styles.botaoSalvar]}
+                onPress={salvarEdicao}
+              >
+                <Text style={styles.textoBotaoModal}>Salvar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </KeyboardAvoidingView>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -54,10 +240,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 16,
     textAlign: "center",
+    color: "#2c3e50",
   },
   formulario: {
     flexDirection: "row",
-    marginBottom: 16,
+    marginBottom: 8,
   },
   input: {
     flex: 1,
@@ -69,26 +256,28 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginRight: 8,
   },
-  botaoExcluir: {
-    backgroundColor: "#de2e2e",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    justifyContent: "center",
-    marginLeft: 6,
-  },
-  textoBotaoExcluir: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
   botaoAdicionar: {
     backgroundColor: "#2e86de",
     borderRadius: 8,
     paddingHorizontal: 12,
-    justifyContent: "center",
+    justifyContent: "center", // Corrigido de "justify" para "justifyContent"
+    alignItems: "center",
   },
   textoBotaoAdicionar: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  botaoLimpar: {
+    backgroundColor: "#de2e2e",
+    borderRadius: 8,
+    paddingVertical: 6,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  textoBotaoLimpar: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 12,
   },
   listaConteudo: {
     paddingBottom: 20,
@@ -98,7 +287,6 @@ const styles = StyleSheet.create({
     color: "#888",
     marginTop: 24,
   },
-  /* ESTILOS DO MODAL */
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -116,17 +304,37 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 12,
+    textAlign: "center",
+  },
+  labelInput: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#555",
+    marginBottom: 4,
   },
   inputModal: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
-    padding: 10,
-    marginBottom: 16,
+    padding: 8,
+    marginBottom: 12,
+  },
+  rowInputs: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  colunaData: {
+    flex: 1,
+    marginRight: 6,
+  },
+  colunaDataDireita: {
+    flex: 1,
+    marginLeft: 6,
   },
   modalBotoes: {
     flexDirection: "row",
     justifyContent: "flex-end",
+    marginTop: 8,
   },
   botaoModal: {
     borderRadius: 8,
