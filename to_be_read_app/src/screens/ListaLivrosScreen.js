@@ -1,10 +1,45 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import LivroItem from "../components/LivroItem"
 
 
-export default function ListaLivrosScreen (){
+export default function ListaLivrosScreen (
+){
 
+  const [tarefas, setTarefas] = useState([]);
+  const [textoInput, setTextoInput] = useState("");
+  const [carregando, setCarregando] = useState(true);
+  const [editarTarefa, setEditarTarefa] = useState(null);
+
+
+  function adicionarLeitura(){
+    const texto = textoInput.trim();
+     if (texto === "") return;
+
+    const novaTarefa = {
+      id: Date.now().toString(),
+      texto,
+      concluida: false,
+    };
+
+    setTarefas((tarefasAtuais) => [...tarefasAtuais, novaTarefa]);
+    setTextoInput("")
+
+  }
+  return(
+<View>
+    <Text style={styles.titulo}> Virando a página</Text>
+    <View>
+
+      <TextInput style={styles.input} placeholder="Qual sua próxima leitura?"/>
+      <TouchableOpacity
+          style={styles.botaoAdicionar}
+          onPress={adicionarLeitura}>
+        <Text style={styles.textoBotaoAdicionar}>Adicionar leitura 🌟</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+  )
 }
 
 const styles = StyleSheet.create({
