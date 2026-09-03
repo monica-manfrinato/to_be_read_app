@@ -63,8 +63,8 @@ export default function ListaLivrosScreen() {
   // Salvar no AsyncStorage quando a lista de livros for alterada
   useEffect(() => {
     if (carregando) return;
-    AsyncStorage.setItem(CHAVE_STORAGE, JSON.stringify(livros)).catch(
-      (erro) => console.error("Erro ao salvar livros:", erro)
+    AsyncStorage.setItem(CHAVE_STORAGE, JSON.stringify(livros)).catch((erro) =>
+      console.error("Erro ao salvar livros:", erro),
     );
   }, [livros, carregando]);
 
@@ -136,8 +136,8 @@ export default function ListaLivrosScreen() {
               dataInicio: editarLivro.dataInicio,
               dataFim: editarLivro.dataFim,
             }
-          : item
-      )
+          : item,
+      ),
     );
 
     setEditarLivro(null);

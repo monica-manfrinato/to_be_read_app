@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
-import ListaLivrosScreen from "./src/screens/ListaLivrosScreen"
+import ListaLivrosScreen from "./src/screens/ListaLivrosScreen";
 
 export default function App() {
   return (
@@ -10,4 +10,3 @@ export default function App() {
     </>
   );
 }
-

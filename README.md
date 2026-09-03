@@ -25,7 +25,9 @@ Projeto integrador focado em **Persistência de Dados** para dispositivos móvei
 ## 💻 Como Rodar o Projeto
 
 ### Pré-requisitos
+
 Antes de começar, certifique-se de ter instalado em sua máquina:
+
 - [Node.js](https://nodejs.org/) (versão LTS recomendada)
 - [npm](https://www.npmjs.com/) (instalado junto com o Node)
 - Emulador Android/iOS configurado ou o aplicativo **Expo Go** no seu dispositivo móvel (caso utilize Expo).
@@ -33,40 +35,34 @@ Antes de começar, certifique-se de ter instalado em sua máquina:
 ### Passo a Passo
 
 1. **Clonar o repositório:**
-    ```bash
+
+   ```bash
    git clone https://github.com/monica-manfrinato/to_be_read_app.git
    cd to_be_read_app
-    ```
+   ```
 
 2. **Instalar as dependências:**
-    ```bash
-    npm install
-    ```
+
+   ```bash
+   npm install
+   ```
 
 3. **Iniciar o Metro Bundler / Servidor Local:**
-    ```bash
-    npx expo start
-    ```
+
+   ```bash
+   npx expo start
+   ```
 
 4. **Visualizar no dispositivo:**
+
 - Abra o aplicativo Expo Go no celular e escaneie o QR Code exibido no terminal.
 - Alternativamente, pressione a no terminal para rodar no emulador Android ou w para rodar na Web.
-
-
-
----
-
-## 📸 Demonstração do Aplicativo
-
-| Tela Inicial | Cadastro de Livro | Avaliação |
-| --- | --- | --- |
-|  |  |  |
 
 ---
 
 ## 👥 Integrantes (3º ano B)
 
-* **Heloísa Gabrielly Paixão** Nº09 - [GitHub](https://github.com/heloisagpaixao)
-* **Mônica Cotrim Manfrinato** Nº21 - [GitHub](https://github.com/monica-manfrinato)
+- **Heloísa Gabrielly Paixão** Nº09 - [GitHub](https://github.com/heloisagpaixao)
+- **Mônica Cotrim Manfrinato** Nº21 - [GitHub](https://github.com/monica-manfrinato)
 
 ---
