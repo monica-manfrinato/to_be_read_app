@@ -5,7 +5,14 @@ export default function LivroItem({
   aoAlternarConcluida,
   aoExcluir,
   aoEditar,
+
 }) {
+  // Converte o valor numérico da nota em estrelas visuais
+  const renderizarEstrelas = (nota) => {
+    const qtd = Number(nota) || 0;
+    return "⭐".repeat(qtd);
+  };
+
   return (
     <View style={styles.item}>
       {/* Ao tocar na área do texto, alterna o status de lido/pendente */}
@@ -18,9 +25,11 @@ export default function LivroItem({
           {livro.titulo}
         </Text>
 
-        {/* Exibe nota e datas se estiverem preenchidas */}
+        {/* Exibe estrelas em vez do número bruto */}
         {livro.avaliacao ? (
-          <Text style={styles.detalhes}>Nota: {livro.avaliacao}</Text>
+          <Text style={styles.detalhes}>
+            Nota: {renderizarEstrelas(livro.avaliacao)}
+          </Text>
         ) : null}
 
         {livro.dataInicio || livro.dataFim ? (
