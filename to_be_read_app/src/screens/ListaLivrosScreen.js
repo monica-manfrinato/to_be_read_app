@@ -50,8 +50,8 @@ export default function ListaLivrosScreen() {
   // Salvar no AsyncStorage quando a lista de livros for alterada
   useEffect(() => {
     if (carregando) return;
-    AsyncStorage.setItem(CHAVE_STORAGE, JSON.stringify(livros)).catch(
-      (erro) => console.error("Erro ao salvar livros:", erro)
+    AsyncStorage.setItem(CHAVE_STORAGE, JSON.stringify(livros)).catch((erro) =>
+      console.error("Erro ao salvar livros:", erro),
     );
   }, [livros, carregando]);
 
@@ -75,14 +75,14 @@ export default function ListaLivrosScreen() {
   function alternarLido(id) {
     setLivros((livrosAtuais) =>
       livrosAtuais.map((livro) =>
-        livro.id === id ? { ...livro, lido: !livro.lido } : livro
-      )
+        livro.id === id ? { ...livro, lido: !livro.lido } : livro,
+      ),
     );
   }
 
   function excluirLivro(id) {
     setLivros((livrosAtuais) =>
-      livrosAtuais.filter((livro) => livro.id !== id)
+      livrosAtuais.filter((livro) => livro.id !== id),
     );
   }
 
@@ -103,8 +103,8 @@ export default function ListaLivrosScreen() {
               dataInicio: editarLivro.dataInicio,
               dataFim: editarLivro.dataFim,
             }
-          : item
-      )
+          : item,
+      ),
     );
 
     setEditarLivro(null);
@@ -119,16 +119,16 @@ export default function ListaLivrosScreen() {
 
       {/* Formulário de Adição */}
       <View style={styles.formulario}>
-      <TextInput
-        style={styles.input}
-        placeholder="Qual sua próxima leitura?"
-        value={tituloInput}
-        onChangeText={setTituloInput}
-        autoCorrect={false}
-        onSubmitEditing={adicionarLivro}
-        returnKeyType="done"
-      />        
-      <TouchableOpacity
+        <TextInput
+          style={styles.input}
+          placeholder="Qual sua próxima leitura?"
+          value={tituloInput}
+          onChangeText={setTituloInput}
+          autoCorrect={false}
+          onSubmitEditing={adicionarLivro}
+          returnKeyType="done"
+        />
+        <TouchableOpacity
           style={styles.botaoAdicionar}
           onPress={adicionarLivro}
         >
@@ -181,7 +181,9 @@ export default function ListaLivrosScreen() {
             />
 
             {/* Seleção por Estrelas (1 a 5) */}
-            <Text style={styles.labelInput}>Avaliação (Clique para selecionar):</Text>
+            <Text style={styles.labelInput}>
+              Avaliação (Clique para selecionar):
+            </Text>
             <View style={styles.containerEstrelas}>
               {[1, 2, 3, 4, 5].map((estrela) => (
                 <TouchableOpacity
@@ -189,12 +191,17 @@ export default function ListaLivrosScreen() {
                   onPress={() =>
                     setEditarLivro((atual) => ({
                       ...atual,
-                      avaliacao: atual?.avaliacao == String(estrela) ? "" : String(estrela),
+                      avaliacao:
+                        atual?.avaliacao == String(estrela)
+                          ? ""
+                          : String(estrela),
                     }))
                   }
                 >
                   <Text style={styles.iconeEstrela}>
-                    {estrela <= Number(editarLivro?.avaliacao || 0) ? "⭐" : "☆"}
+                    {estrela <= Number(editarLivro?.avaliacao || 0)
+                      ? "⭐"
+                      : "☆"}
                   </Text>
                 </TouchableOpacity>
               ))}

@@ -5,7 +5,6 @@ export default function LivroItem({
   aoAlternarConcluida,
   aoExcluir,
   aoEditar,
-
 }) {
   // Converte o valor numérico da nota em estrelas visuais
   const renderizarEstrelas = (nota) => {
