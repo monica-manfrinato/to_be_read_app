@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderLeftWidth: 4,
-    borderLeftColor: "#2e86de",
+    borderLeftColor: "#da627d",
     elevation: 2, // Sombra suave no Android
     shadowColor: "#000", // Sombra no iOS
     shadowOffset: { width: 0, height: 1 },
@@ -71,15 +71,14 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    color: "#450920",
   },
   textoConcluido: {
     textDecorationLine: "line-through",
-    color: "#888",
   },
   detalhes: {
     fontSize: 12,
-    color: "#666",
+    color: "#a53860",
     marginTop: 2,
   },
   botoesContainer: {
@@ -87,7 +86,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   botaoEditar: {
-    backgroundColor: "#e1b12c",
+    backgroundColor: "#da627d",
     borderRadius: 6,
     paddingVertical: 6,
     paddingHorizontal: 10,
@@ -99,7 +98,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   botaoExcluir: {
-    backgroundColor: "#e84118",
+    backgroundColor: "#450920",
     borderRadius: 6,
     paddingVertical: 6,
     paddingHorizontal: 10,

@@ -261,7 +261,7 @@ export default function ListaLivrosScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#ffefde",
     paddingTop: 60,
     paddingHorizontal: 16,
   },
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 16,
     textAlign: "center",
-    color: "#370040",
+    color: "#450920",
   },
   formulario: {
     flexDirection: "row",
@@ -280,14 +280,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#370040",
+    borderColor: "#450920",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginRight: 8,
   },
   botaoAdicionar: {
-    backgroundColor: "#6b009c",
+    backgroundColor: "#450920",
     borderRadius: 8,
     paddingHorizontal: 12,
     justifyContent: "center",
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   botaoLimpar: {
-    backgroundColor: "#de2e2e",
+    backgroundColor: "#d40000",
     borderRadius: 8,
     paddingVertical: 6,
     alignItems: "center",
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   },
   listaVazia: {
     textAlign: "center",
-    color: "#888",
+    color: "#da627d",
     marginTop: 24,
   },
   modalOverlay: {
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   labelInput: {
     fontSize: 12,
     fontWeight: "bold",
-    color: "#555",
+    color: "#450920",
     marginBottom: 4,
   },
   containerEstrelas: {
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   inputModal: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#da627d",
     borderRadius: 8,
     padding: 8,
     marginBottom: 12,
@@ -382,10 +382,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   botaoCancelar: {
-    backgroundColor: "#888",
+    backgroundColor: "#450920",
   },
   botaoSalvar: {
-    backgroundColor: "#2e86de",
+    backgroundColor: "#da627d",
   },
   textoBotaoModal: {
     color: "#fff",
