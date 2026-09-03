@@ -17,9 +17,22 @@ const CHAVE_STORAGE = "@to-be-read:livros";
 
 export default function ListaLivrosScreen() {
   const [livros, setLivros] = useState([]);
-  const [tituloInput, setTituloInput] = useState("");
+  const [buscaInput, setBuscaInput] = useState("");
   const [carregando, setCarregando] = useState(true);
+
+  // Controle de Modais e Estados de Formulário
+  const [modalAddVisivel, setModalAddVisivel] = useState(false);
+  const [novoLivro, setNovoLivro] = useState({
+    titulo: "",
+    autor: "",
+    dataInicio: "",
+  });
   const [editarLivro, setEditarLivro] = useState(null);
+  const [avaliarLivro, setAvaliarLivro] = useState(null);
+
+  // Estado para controlar a confirmação de exclusão (1 livro ou todos)
+  // Formato: null | { tipo: 'unico', id: string, titulo: string } | { tipo: 'todos' }
+  const [modalExcluir, setModalExcluir] = useState(null);
 
   // Função auxiliar para aplicar máscara DD/MM/AAAA e barrar caracteres inválidos
   function aplicarMascaraData(texto) {
@@ -55,41 +68,61 @@ export default function ListaLivrosScreen() {
     );
   }, [livros, carregando]);
 
+  // Adicionar novo livro via Modal
   function adicionarLivro() {
-    const titulo = tituloInput.trim();
+    const titulo = novoLivro.titulo.trim();
     if (titulo === "") return;
 
-    const novoLivro = {
+    const item = {
       id: Date.now().toString(),
       titulo,
+      autor: novoLivro.autor.trim(),
       lido: false,
       avaliacao: "",
-      dataInicio: "",
+      dataInicio: novoLivro.dataInicio,
       dataFim: "",
     };
 
-    setLivros((livrosAtuais) => [...livrosAtuais, novoLivro]);
-    setTituloInput("");
+    setLivros((livrosAtuais) => [item, ...livrosAtuais]);
+    setNovoLivro({ titulo: "", autor: "", dataInicio: "" });
+    setModalAddVisivel(false);
   }
 
-  function alternarLido(id) {
+  // Clique no livro: se não lido, abre o modal de avaliação. Se já lido, desmarca.
+  function tratarCliqueConcluir(livro) {
+    if (!livro.lido) {
+      setAvaliarLivro({
+        ...livro,
+        avaliacao: livro.avaliacao || "",
+      });
+    } else {
+      setLivros((livrosAtuais) =>
+        livrosAtuais.map((item) =>
+          item.id === livro.id ? { ...item, lido: false } : item
+        )
+      );
+    }
+  }
+
+  // Confirmar avaliação e marcar como concluído
+  function salvarAvaliacao() {
+    if (!avaliarLivro) return;
+
     setLivros((livrosAtuais) =>
-      livrosAtuais.map((livro) =>
-        livro.id === id ? { ...livro, lido: !livro.lido } : livro
+      livrosAtuais.map((item) =>
+        item.id === avaliarLivro.id
+          ? {
+              ...item,
+              lido: true,
+              avaliacao: avaliarLivro.avaliacao,
+            }
+          : item
       )
     );
+    setAvaliarLivro(null);
   }
 
-  function excluirLivro(id) {
-    setLivros((livrosAtuais) =>
-      livrosAtuais.filter((livro) => livro.id !== id)
-    );
-  }
-
-  function limparLivros() {
-    setLivros([]);
-  }
-
+  // Editar Título, Autor e Datas (sem mexer na avaliação)
   function salvarEdicao() {
     if (!editarLivro || editarLivro.titulo.trim() === "") return;
 
@@ -99,7 +132,7 @@ export default function ListaLivrosScreen() {
           ? {
               ...item,
               titulo: editarLivro.titulo.trim(),
-              avaliacao: editarLivro.avaliacao,
+              autor: editarLivro.autor ? editarLivro.autor.trim() : "",
               dataInicio: editarLivro.dataInicio,
               dataFim: editarLivro.dataFim,
             }
@@ -110,6 +143,37 @@ export default function ListaLivrosScreen() {
     setEditarLivro(null);
   }
 
+  // Funções de solicitação e confirmação de exclusão
+  function solicitarExclusaoLivro(livro) {
+    setModalExcluir({ tipo: "unico", id: livro.id, titulo: livro.titulo });
+  }
+
+  function solicitarExclusaoTodos() {
+    if (livros.length === 0) return;
+    setModalExcluir({ tipo: "todos" });
+  }
+
+  function confirmarExclusao() {
+    if (!modalExcluir) return;
+
+    if (modalExcluir.tipo === "unico") {
+      setLivros((livrosAtuais) =>
+        livrosAtuais.filter((livro) => livro.id !== modalExcluir.id)
+      );
+    } else if (modalExcluir.tipo === "todos") {
+      setLivros([]);
+    }
+
+    setModalExcluir(null);
+  }
+
+  // Filtro de busca em tempo real pelo título ou autor
+  const livrosFiltrados = livros.filter(
+    (l) =>
+      l.titulo.toLowerCase().includes(buscaInput.toLowerCase()) ||
+      (l.autor && l.autor.toLowerCase().includes(buscaInput.toLowerCase()))
+  );
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -117,50 +181,119 @@ export default function ListaLivrosScreen() {
     >
       <Text style={styles.titulo}>Virando a página 📖</Text>
 
-      {/* Formulário de Adição */}
-      <View style={styles.formulario}>
+      {/* 1. BARRA DE PESQUISA */}
       <TextInput
         style={styles.input}
-        placeholder="Qual sua próxima leitura?"
-        value={tituloInput}
-        onChangeText={setTituloInput}
+        placeholder="🔎︎ Buscar por título ou autor..."
+        value={buscaInput}
+        onChangeText={setBuscaInput}
         autoCorrect={false}
-        onSubmitEditing={adicionarLivro}
-        returnKeyType="done"
-      />        
-      <TouchableOpacity
-          style={styles.botaoAdicionar}
-          onPress={adicionarLivro}
-        >
-          <Text style={styles.textoBotaoAdicionar}>Adicionar 🌟</Text>
-        </TouchableOpacity>
-      </View>
+      />
 
-      <TouchableOpacity style={styles.botaoLimpar} onPress={limparLivros}>
-        <Text style={styles.textoBotaoLimpar}>Limpar estante</Text>
+      {/* 2. BOTÃO ADICIONAR NOVA LEITURA */}
+      <TouchableOpacity
+        style={styles.botaoAdicionar}
+        onPress={() => setModalAddVisivel(true)}
+      >
+        <Text style={styles.textoBotaoAdicionar}>Adicionar nova leitura 🌟</Text>
       </TouchableOpacity>
 
-      {/* Lista de Livros */}
+      {/* 3. EXCLUIR LISTA DE LIVROS */}
+      <TouchableOpacity
+        style={styles.botaoLimpar}
+        onPress={solicitarExclusaoTodos}
+      >
+        <Text style={styles.textoBotaoLimpar}>Excluir lista de livros</Text>
+      </TouchableOpacity>
+
+      {/* Lista de Livros Filtrados */}
       <FlatList
-        data={livros}
+        data={livrosFiltrados}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <LivroItem
             livro={item}
-            aoAlternarConcluida={alternarLido}
-            aoExcluir={excluirLivro}
+            aoAlternarConcluida={() => tratarCliqueConcluir(item)}
+            aoExcluir={() => solicitarExclusaoLivro(item)}
             aoEditar={() => setEditarLivro(item)}
           />
         )}
         ListEmptyComponent={
           <Text style={styles.listaVazia}>
-            Nenhum livro na sua estante ainda. Adicione o primeiro!
+            {buscaInput
+              ? "Nenhum livro encontrado."
+              : "Nenhum livro na sua estante ainda. Adicione o primeiro!"}
           </Text>
         }
         contentContainerStyle={styles.listaConteudo}
       />
 
-      {/* Modal de Edição */}
+      {/* MODAL 1: Adicionar Novo Livro */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalAddVisivel}
+        onRequestClose={() => setModalAddVisivel(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitulo}>Novo Livro</Text>
+
+            <Text style={styles.labelInput}>Título do Livro:</Text>
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Ex: O Hobbit"
+              value={novoLivro.titulo}
+              onChangeText={(texto) =>
+                setNovoLivro((atual) => ({ ...atual, titulo: texto }))
+              }
+            />
+
+            <Text style={styles.labelInput}>Nome do Autor:</Text>
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Ex: J.R.R. Tolkien"
+              value={novoLivro.autor}
+              onChangeText={(texto) =>
+                setNovoLivro((atual) => ({ ...atual, autor: texto }))
+              }
+            />
+
+            <Text style={styles.labelInput}>Data de Início:</Text>
+            <TextInput
+              style={styles.inputModal}
+              placeholder="DD/MM/AAAA"
+              keyboardType="numeric"
+              maxLength={10}
+              value={novoLivro.dataInicio}
+              onChangeText={(texto) =>
+                setNovoLivro((atual) => ({
+                  ...atual,
+                  dataInicio: aplicarMascaraData(texto),
+                }))
+              }
+            />
+
+            <View style={styles.modalBotoes}>
+              <TouchableOpacity
+                style={[styles.botaoModal, styles.botaoCancelar]}
+                onPress={() => setModalAddVisivel(false)}
+              >
+                <Text style={styles.textoBotaoModal}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.botaoModal, styles.botaoSalvar]}
+                onPress={adicionarLivro}
+              >
+                <Text style={styles.textoBotaoModal}>Adicionar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL 2: Editar Livro */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -169,7 +302,7 @@ export default function ListaLivrosScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitulo}>Detalhes do Livro</Text>
+            <Text style={styles.modalTitulo}>Editar Livro</Text>
 
             <Text style={styles.labelInput}>Título do Livro:</Text>
             <TextInput
@@ -180,27 +313,15 @@ export default function ListaLivrosScreen() {
               }
             />
 
-            {/* Seleção por Estrelas (1 a 5) */}
-            <Text style={styles.labelInput}>Avaliação (Clique para selecionar):</Text>
-            <View style={styles.containerEstrelas}>
-              {[1, 2, 3, 4, 5].map((estrela) => (
-                <TouchableOpacity
-                  key={estrela}
-                  onPress={() =>
-                    setEditarLivro((atual) => ({
-                      ...atual,
-                      avaliacao: atual?.avaliacao == String(estrela) ? "" : String(estrela),
-                    }))
-                  }
-                >
-                  <Text style={styles.iconeEstrela}>
-                    {estrela <= Number(editarLivro?.avaliacao || 0) ? "⭐" : "☆"}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <Text style={styles.labelInput}>Nome do Autor:</Text>
+            <TextInput
+              style={styles.inputModal}
+              value={editarLivro?.autor || ""}
+              onChangeText={(texto) =>
+                setEditarLivro((atual) => ({ ...atual, autor: texto }))
+              }
+            />
 
-            {/* Inputs de Data com Máscara e Teclado Numérico */}
             <View style={styles.rowInputs}>
               <View style={styles.colunaData}>
                 <Text style={styles.labelInput}>Início:</Text>
@@ -255,6 +376,93 @@ export default function ListaLivrosScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* MODAL 3: Avaliação de Leitura Concluída */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={!!avaliarLivro}
+        onRequestClose={() => setAvaliarLivro(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitulo}>Leitura Concluída! 🎉</Text>
+            <Text style={styles.labelInput}>Como você avalia este livro?</Text>
+
+            <View style={styles.containerEstrelas}>
+              {[1, 2, 3, 4, 5].map((estrela) => (
+                <TouchableOpacity
+                  key={estrela}
+                  onPress={() =>
+                    setAvaliarLivro((atual) => ({
+                      ...atual,
+                      avaliacao: String(estrela),
+                    }))
+                  }
+                >
+                  <Text style={styles.iconeEstrela}>
+                    {estrela <= Number(avaliarLivro?.avaliacao || 0)
+                      ? "⭐"
+                      : "☆"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.modalBotoes}>
+              <TouchableOpacity
+                style={[styles.botaoModal, styles.botaoCancelar]}
+                onPress={() => setAvaliarLivro(null)}
+              >
+                <Text style={styles.textoBotaoModal}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.botaoModal, styles.botaoSalvar]}
+                onPress={salvarAvaliacao}
+              >
+                <Text style={styles.textoBotaoModal}>Concluir</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL 4: Confirmação de Exclusão (Livro único ou Todos) */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={!!modalExcluir}
+        onRequestClose={() => setModalExcluir(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitulo}>Confirmar Exclusão ⚠️</Text>
+
+            <Text style={styles.textoConfirmacao}>
+              {modalExcluir?.tipo === "todos"
+                ? "Tem certeza de que deseja excluir TODOS os livros da sua lista? Esta ação não pode ser desfeita."
+                : `Tem certeza de que deseja excluir o livro "${modalExcluir?.titulo}"?`}
+            </Text>
+
+            <View style={styles.modalBotoes}>
+              <TouchableOpacity
+                style={[styles.botaoModal, styles.botaoCancelar]}
+                onPress={() => setModalExcluir(null)}
+              >
+                <Text style={styles.textoBotaoModal}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.botaoModal, styles.botaoExcluirModal]}
+                onPress={confirmarExclusao}
+              >
+                <Text style={styles.textoBotaoModal}>Excluir</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -273,26 +481,24 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#450920",
   },
-  formulario: {
-    flexDirection: "row",
-    marginBottom: 8,
-  },
   input: {
-    flex: 1,
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#450920",
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginRight: 8,
+    paddingVertical: 10,
+    marginBottom: 20,
+    width: "100%",
   },
   botaoAdicionar: {
     backgroundColor: "#450920",
     borderRadius: 8,
-    paddingHorizontal: 12,
-    justifyContent: "center",
+    paddingVertical: 12,
     alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+    width: "100%",
   },
   textoBotaoAdicionar: {
     color: "#fff",
@@ -301,14 +507,15 @@ const styles = StyleSheet.create({
   botaoLimpar: {
     backgroundColor: "#d40000",
     borderRadius: 8,
-    paddingVertical: 6,
+    paddingVertical: 10,
     alignItems: "center",
     marginBottom: 16,
+    width: "100%",
   },
   textoBotaoLimpar: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 12,
+    fontSize: 13,
   },
   listaConteudo: {
     paddingBottom: 20,
@@ -336,6 +543,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 12,
     textAlign: "center",
+    color: "#450920",
+  },
+  textoConfirmacao: {
+    fontSize: 14,
+    color: "#450920",
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 20,
   },
   labelInput: {
     fontSize: 12,
@@ -387,6 +602,9 @@ const styles = StyleSheet.create({
   },
   botaoSalvar: {
     backgroundColor: "#da627d",
+  },
+  botaoExcluirModal: {
+    backgroundColor: "#d40000",
   },
   textoBotaoModal: {
     color: "#fff",
