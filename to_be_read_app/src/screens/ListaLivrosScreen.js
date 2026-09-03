@@ -119,15 +119,16 @@ export default function ListaLivrosScreen() {
 
       {/* Formulário de Adição */}
       <View style={styles.formulario}>
-        <TextInput
-          style={styles.input}
-          placeholder="Qual sua próxima leitura?"
-          value={tituloInput}
-          onChangeText={setTituloInput}
-          onSubmitEditing={adicionarLivro}
-          returnKeyType="done"
-        />
-        <TouchableOpacity
+      <TextInput
+        style={styles.input}
+        placeholder="Qual sua próxima leitura?"
+        value={tituloInput}
+        onChangeText={setTituloInput}
+        autoCorrect={false}
+        onSubmitEditing={adicionarLivro}
+        returnKeyType="done"
+      />        
+      <TouchableOpacity
           style={styles.botaoAdicionar}
           onPress={adicionarLivro}
         >
