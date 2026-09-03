@@ -21,6 +21,15 @@ export default function ListaLivrosScreen() {
   const [carregando, setCarregando] = useState(true);
   const [editarLivro, setEditarLivro] = useState(null);
 
+  // Função auxiliar para aplicar máscara DD/MM/AAAA e barrar caracteres inválidos
+  function aplicarMascaraData(texto) {
+    const apenasNumeros = texto.replace(/\D/g, "").slice(0, 8);
+    if (apenasNumeros.length <= 2) return apenasNumeros;
+    if (apenasNumeros.length <= 4)
+      return `${apenasNumeros.slice(0, 2)}/${apenasNumeros.slice(2)}`;
+    return `${apenasNumeros.slice(0, 2)}/${apenasNumeros.slice(2, 4)}/${apenasNumeros.slice(4, 8)}`;
+  }
+
   // Carregar do AsyncStorage ao iniciar
   useEffect(() => {
     async function carregarLivros() {
@@ -144,7 +153,7 @@ export default function ListaLivrosScreen() {
         )}
         ListEmptyComponent={
           <Text style={styles.listaVazia}>
-            Nenhum livro na sua estante ainda. Add o primeiro!
+            Nenhum livro na sua estante ainda. Adicione o primeiro!
           </Text>
         }
         contentContainerStyle={styles.listaConteudo}
@@ -170,25 +179,41 @@ export default function ListaLivrosScreen() {
               }
             />
 
-            <Text style={styles.labelInput}>Avaliação (Nota de 1 a 5):</Text>
-            <TextInput
-              style={styles.inputModal}
-              placeholder="Ex: 5 ou ⭐⭐⭐⭐⭐"
-              value={editarLivro?.avaliacao || ""}
-              onChangeText={(texto) =>
-                setEditarLivro((atual) => ({ ...atual, avaliacao: texto }))
-              }
-            />
+            {/* Seleção por Estrelas (1 a 5) */}
+            <Text style={styles.labelInput}>Avaliação (Clique para selecionar):</Text>
+            <View style={styles.containerEstrelas}>
+              {[1, 2, 3, 4, 5].map((estrela) => (
+                <TouchableOpacity
+                  key={estrela}
+                  onPress={() =>
+                    setEditarLivro((atual) => ({
+                      ...atual,
+                      avaliacao: atual?.avaliacao == String(estrela) ? "" : String(estrela),
+                    }))
+                  }
+                >
+                  <Text style={styles.iconeEstrela}>
+                    {estrela <= Number(editarLivro?.avaliacao || 0) ? "⭐" : "☆"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
+            {/* Inputs de Data com Máscara e Teclado Numérico */}
             <View style={styles.rowInputs}>
               <View style={styles.colunaData}>
                 <Text style={styles.labelInput}>Início:</Text>
                 <TextInput
                   style={styles.inputModal}
                   placeholder="DD/MM/AAAA"
+                  keyboardType="numeric"
+                  maxLength={10}
                   value={editarLivro?.dataInicio || ""}
                   onChangeText={(texto) =>
-                    setEditarLivro((atual) => ({ ...atual, dataInicio: texto }))
+                    setEditarLivro((atual) => ({
+                      ...atual,
+                      dataInicio: aplicarMascaraData(texto),
+                    }))
                   }
                 />
               </View>
@@ -198,9 +223,14 @@ export default function ListaLivrosScreen() {
                 <TextInput
                   style={styles.inputModal}
                   placeholder="DD/MM/AAAA"
+                  keyboardType="numeric"
+                  maxLength={10}
                   value={editarLivro?.dataFim || ""}
                   onChangeText={(texto) =>
-                    setEditarLivro((atual) => ({ ...atual, dataFim: texto }))
+                    setEditarLivro((atual) => ({
+                      ...atual,
+                      dataFim: aplicarMascaraData(texto),
+                    }))
                   }
                 />
               </View>
@@ -240,7 +270,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 16,
     textAlign: "center",
-    color: "#2c3e50",
+    color: "#370040",
   },
   formulario: {
     flexDirection: "row",
@@ -250,17 +280,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#370040",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginRight: 8,
   },
   botaoAdicionar: {
-    backgroundColor: "#2e86de",
+    backgroundColor: "#6b009c",
     borderRadius: 8,
     paddingHorizontal: 12,
-    justifyContent: "center", // Corrigido de "justify" para "justifyContent"
+    justifyContent: "center",
     alignItems: "center",
   },
   textoBotaoAdicionar: {
@@ -289,7 +319,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "#00000080",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -311,6 +341,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#555",
     marginBottom: 4,
+  },
+  containerEstrelas: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 16,
+    marginTop: 4,
+  },
+  iconeEstrela: {
+    fontSize: 28,
   },
   inputModal: {
     borderWidth: 1,
